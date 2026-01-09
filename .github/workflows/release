@@ -1,0 +1,68 @@
+name: build-and-release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Minecraft versions and loaders
+        id: mcinfo
+        run: |
+          if [ "${CC_TARGET_COMMITISH}" = "main" ]; then
+            echo "MC_VERSIONS=[\"1.21.9\",\"1.21.10\"]" >> $GITHUB_ENV
+            echo "LOADERS=fabric" >> $GITHUB_ENV
+          else
+            echo "Branch ${CC_TARGET_COMMITISH} is not allowed for release"
+            exit 1
+          fi
+        env:
+          CC_TARGET_COMMITISH: ${{ github.event.release.target_commitish }}
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find built jar
+        id: jar
+        run: echo "JAR=$(ls build/libs/*.jar)" >> $GITHUB_ENV
+
+      - name: Publish to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: XQQjth2N
+          name: ${{ github.event.release.name }}
+          version: ${{ github.event.release.tag_name }}
+          changelog: ${{ github.event.release.body }}
+          loaders: |-
+            ${{ env.LOADERS }}
+          game-versions: |-
+            ${{ env.MC_VERSIONS }}
+          files: ${{ env.JAR }}
+          
