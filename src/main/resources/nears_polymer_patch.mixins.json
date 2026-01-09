@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ru.cobaltmc.nears_polymer_patch.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "NBlocksMixin",
+    "NItemsMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
