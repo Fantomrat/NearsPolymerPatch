@@ -15,7 +15,7 @@ jobs:
       - name: Set Minecraft versions and loaders
         id: mcinfo
         run: |
-          if [ "${CC_TARGET_COMMITISH}" = "main" ]; then
+          if [ "${CC_TARGET_COMMITISH}" = "master" ]; then
             echo "MC_VERSIONS=[\"1.21.9\",\"1.21.10\"]" >> $GITHUB_ENV
             echo "LOADERS=fabric" >> $GITHUB_ENV
           else
